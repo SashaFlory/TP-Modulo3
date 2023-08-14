@@ -1,20 +1,3 @@
-// Cantidad de niveles: 20
-
-// cuando se pasa de nivel
-// 1-la velocidad de la pelota aumenta 10%
-// 2-agregar un obstáculo de tamaño y posición random
-
-// Atributos pensados en clase:
-// nivel
-// velocidad
-// obstáculos
-
-// Métodos pensados en clase:
-// pasarNivel
-// agregarObstaculo
-// perder
-// ganar
-
 export default class Juego extends Phaser.Scene {
   constructor() {
     super("juego");
@@ -24,12 +7,15 @@ export default class Juego extends Phaser.Scene {
     this.nivel = 1;
     this.puntaje = 0;
     this.velocidad = 200;
+    this.bordeInferior = 570;
   }
 
   preload() {
     this.load.image("pelota", "./public/images/Pelota.png");
     this.load.image("pala", "./public/images/Pala.png");
     this.load.image("obstaculo", "./public/images/Obstaculo.png");
+    this.load.image("ganador", "./public/images/Ganador.png");
+    this.load.image("perdedor", "./public/images/Perdedor.png");
   }
 
   create() {
@@ -60,10 +46,7 @@ export default class Juego extends Phaser.Scene {
       fill: "#FFFFFF"
     });
 
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    this.agregarObstaculo();
-
+    this.cursors = this.input.keyboard.createCursorKeys();  
   }
 
   update() {
@@ -83,6 +66,9 @@ export default class Juego extends Phaser.Scene {
       this.pala.setVelocityX(0);
     }
 
+    if (this.pelota.y > this.bordeInferior) {
+      this.perder();
+    }
   }
 
   sumarPuntos(pelota, pala) {
@@ -93,7 +79,7 @@ export default class Juego extends Phaser.Scene {
       this.puntaje
     );
 
-    if (this.puntaje >= 5) {
+    if (this.puntaje >= 10) {
       this.pasarNivel();
     }
   }
@@ -120,13 +106,24 @@ export default class Juego extends Phaser.Scene {
     );
 
     this.agregarObstaculo();
+
+    if (this.nivel >= 20) {
+      this.ganador = this.add.image(400, 300, "ganador");
+      this.scene.pause();
+    }
   }
   
   agregarObstaculo() {
     const randomX = Phaser.Math.RND.between(50, 750);
     const randomY = Phaser.Math.RND.between(100, 400);
+    const randomSize = Phaser.Math.RND.between(0.8, 1.6);
 
-    this.obstaculos.create(randomX, randomY, "obstaculo");
+    this.obstaculos.create(randomX, randomY, "obstaculo").setScale(randomSize).refreshBody();
     console.log("nuevo obstáculo", randomX, randomY);
+  }
+
+  perder() {
+    this.add.image(0, 0, "perdedor").setOrigin(0);
+    this.scene.pause();
   }
 }
